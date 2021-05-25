@@ -64,10 +64,11 @@ public interface IItemHandler
      * Inserts an ItemStack into the given slot and return the remainder.
      * The ItemStack <em>should not</em> be modified in this function!
      * </p>
-     * Note: This behaviour is subtly different from {@link IFluidHandler#fill(FluidStack, boolean)}
+     * Note: This function returns the REMAINDER - what was NOT inserted!
+     * This behaviour is subtly different from {@link IFluidHandler#fill}, which returns what was inserted.
      *
      * @param slot     Slot to insert into.
-     * @param stack    ItemStack to insert. This must not be modified by the item handler.
+     * @param stack    ItemStack to insert. Its ownership is given to the item handler. It must never be used or modified by the caller afterwards!
      * @param simulate If true, the insertion is only simulated
      * @return The remaining ItemStack that was not inserted (if the entire stack is accepted, then return an empty ItemStack).
      *         May be the same as the input ItemStack if unchanged, otherwise a new ItemStack.
