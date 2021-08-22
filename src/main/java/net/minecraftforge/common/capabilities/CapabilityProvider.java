@@ -28,6 +28,8 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.ForgeEventFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
@@ -43,6 +45,9 @@ public abstract class CapabilityProvider<B extends CapabilityProvider<B>> implem
      */
     private final CompoundNBT capNBT; // only used before caps are initialized
     private volatile boolean capsInitialized; // must be volatile for double-checked locking to be safe
+
+    private static boolean hasWarnedUnexpectedGetCapabilities = false;
+    private static final Logger LOGGER = LogManager.getLogger();
 
     /**
      * Constructor for regular (non lazy) providers.
@@ -82,7 +87,13 @@ public abstract class CapabilityProvider<B extends CapabilityProvider<B>> implem
         // Detect calls that don't check for capsInitialized, or calls from external code.
         if (!this.capsInitialized)
         {
-            throw new IllegalStateException("Lazy capabilities are not yet initialized. This is a bug!");
+            if (!hasWarnedUnexpectedGetCapabilities)
+            {
+                LOGGER.warn("Unexpected call to getCapabilities() in a lazy CapabilityProvider. Please avoid this call, as it forces capability initialization through an event dispatch. Stacktrace:", new Throwable());
+                hasWarnedUnexpectedGetCapabilities = true;
+            }
+
+            initializeCapsIfNeeded();
         }
 
         return this.capabilities;
